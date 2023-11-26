@@ -1,0 +1,53 @@
+// vim: ft=antlr sw=2 ts=2 et
+
+prog:
+  | macro
+  | typedef // TODO: Is necessary?
+  | var_def
+  | func
+  ;
+
+macro:
+  | '#' .* '\n' ;
+
+identifier:
+  | [a-zA-Z_] [a-zA-Z_0-9]* ;
+
+type_mod:
+  | '[' ']'
+  | '[' expr ']'
+  | '*'
+  ;
+
+type:
+  | type_mod* identifier+ ;
+
+typedef:
+  | "typedef" type identifier ';' ;
+
+var_spec:
+  | identifier ':' type ;
+
+var_def:
+  | var_spec ('=' expr)? ';' ;
+
+struct:
+  | "struct" identifier '{' var_def* '}' ';'
+
+func_args:
+  | var_spec (',' var_spec)* ;
+
+func:
+  | "fn" identifier '(' func_args? ')' type code_block? ';'
+
+code_block:
+  | '{' statement* '}' ;
+
+statement:
+  | code_block
+  | expr ';'
+  | "if" '(' expr ')' statement
+  | "while" '(' expr ')' statement
+  | "for" '(' statement ';' expr ';' statement ')' statement // TODO: Maybe remove?
+  | var_def
+  ;
