@@ -11,6 +11,7 @@ proc sidx {str idx} { string index $str $idx }
 
 # Lexer
 proc tokenize {str} {
+    # {{{
     set tokens {}
 
     set i 0
@@ -181,9 +182,79 @@ proc tokenize {str} {
     }
 
     return $tokens
+    # }}}
 }
 
+proc parse {tokens} {
+    puts $tokens
+    # [ [rule_name start_idx end_idx] ]
+    set stack [list [list "PROG" 0 [llength $tokens] ] ]
+
+    # start and end index "pointers" store
+    while {[llength $stack] > 0} {
+        puts $stack
+
+        # Pop an element from stack
+        set current [lindex $stack end]
+        set stack [lreplace $stack end end]
+
+        set current_rule  [lindex $current 0]
+        set current_start [lindex $current 1]
+        set current_end   [lindex $current 2]
+
+        if {$current_rule == "PROG"} {
+            # macro
+            # var_def
+            # func
+            set token [lindex $tokens $current_start]
+
+            # Macro
+            if {[lindex $token 0] == "MACRO"} {
+                lappend stack [list "PROG" [expr {$current_start + 1}] $current_end]
+                lappend stack [list "MACRO" $current_start $current_start]
+
+                continue
+            }
+        }
+
+        exit 1
+    }
+}
+
+# x: int = 10;
+#
+# [ [PROG ???] ]
+# [ [PROG ???] [VARDEF ???] ]
+# [ [PROG ???] [VARDEF ???] [TYPE ???] ]
+# [ [PROG ???] [VARDEF ???] [EXPR ???] ]
+# [ [PROG ???] [VARDEF ???] ]
+# [ [PROG ???] ]
+# [ ]
+
 # ==========
+
+puts [parse [list \
+        [list "MACRO" "#include <stdio.h>"] \
+        [list "IDENTIFIER" "x_var"] \
+        [list "SPECIAL" ":"] \
+        [list "IDENTIFIER" "int"] \
+        [list "SPECIAL" ";"] \
+        [list "IDENTIFIER" "y_var"] \
+        [list "SPECIAL" ":"] \
+        [list "IDENTIFIER" "int"] \
+        [list "OPERATOR" "="] \
+        [list "NUMBER" "10"] \
+        [list "SPECIAL" ";"] \
+        [list "IDENTIFIER" "fn"] \
+        [list "IDENTIFIER" "main"] \
+        [list "SPECIAL" "("] \
+        [list "SPECIAL" ")"] \
+        [list "IDENTIFIER" "void"] \
+        [list "SPECIAL" "{"] \
+        [list "SPECIAL" "}"] \
+    ]]
+
+exit 0
 
 set fcnt {}
 
