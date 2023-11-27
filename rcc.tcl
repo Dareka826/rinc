@@ -187,8 +187,13 @@ proc tokenize {str} {
 
 proc parse {tokens} {
     puts $tokens
-    # [ [rule_name start_idx end_idx] ]
+    # [ [rule_name start_idx rule_specific_state_array ] ]
     set stack [list [list "PROG" 0 [llength $tokens] ] ]
+
+    # "return" -> the point after which the tokens are still not parsed
+    set new_start 0
+    # "return" -> the resulting ast
+    set ast_result {}
 
     # start and end index "pointers" store
     while {[llength $stack] > 0} {
