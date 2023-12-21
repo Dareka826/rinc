@@ -1,0 +1,8 @@
+.dep.*
+build/*.o
+build/*.d
+build/main
+rcc
+all
+clean
+env
